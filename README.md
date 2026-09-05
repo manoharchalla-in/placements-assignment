@@ -23,24 +23,6 @@ Experience and test the cryptographic solver directly in your browser without an
 
 ---
 
-## 🏛️ System Architecture
-
-```mermaid
-flowchart TD
-    A[Input JSON Payload] --> B[Arbitrary-Base Decoder Engine]
-    B --> C[BigInt x, y Root Parser]
-    C --> D{Root Count n > k?}
-    D -- No --> E[Direct Lagrange Polynomial Solver]
-    D -- Yes --> F[RANSAC-Style Polynomial Consensus Engine]
-    F --> G[Gaussian Matrix Solver & Integer Coefficient Verification]
-    G --> H[Imposter Root Isolation Node]
-    H --> I[Validated Degree-m Polynomial]
-    E --> J[Secret Constant Term c = f 0]
-    I --> J[Secret Constant Term c = f 0]
-```
-
----
-
 ## 🎯 Executive Results Matrix
 
 | Test Environment | Parameters | Valid Share Subsets (x) | Isolated Corrupted Shares | Secret Constant Term (c = f(0)) | Verification |
