@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node index.js input1.json input2.json"
+    "test": "node index.js input1.js input2.js"
   },
   "keywords": [
     "shamir-secret-sharing",

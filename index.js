@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Decode a string number of any base (up to base 36) into a BigInt.
@@ -14,10 +15,9 @@ function parseBigInt(str, base) {
 }
 
 /**
- * Parse input JSON file into points (x, y) as BigInts.
+ * Parse input JS/JSON object into points (x, y) as BigInts.
  */
-function parseInput(filePath) {
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+function parseData(data) {
   const k = data.keys.k;
   const n = data.keys.n;
   const points = [];
@@ -34,8 +34,27 @@ function parseInput(filePath) {
 }
 
 /**
+ * Load test case from JS module or JSON file path.
+ */
+function loadTestCase(target) {
+  if (typeof target === 'object') return target;
+  const resolved = path.resolve(target);
+  if (fs.existsSync(resolved)) {
+    if (resolved.endsWith('.js')) {
+      return require(resolved);
+    } else if (resolved.endsWith('.json')) {
+      return JSON.parse(fs.readFileSync(resolved, 'utf8'));
+    }
+  }
+  try {
+    return require(target);
+  } catch (e) {
+    throw new Error('Could not load test case target: ' + target);
+  }
+}
+
+/**
  * Perform Lagrange Interpolation at x = 0 to find constant term c.
- * c = sum_{i=0}^{k-1} y_i * prod_{j != i} (-x_j) / prod_{j != i} (x_i - x_j)
  */
 function lagrangeInterpolationAtZero(pts) {
   const k = pts.length;
@@ -62,9 +81,7 @@ function lagrangeInterpolationAtZero(pts) {
  */
 function getPolynomialCoefficients(sub) {
   const k = sub.length;
-  // Construct augmented matrix [V | Y]
-  // Row i: x_i^(k-1), x_i^(k-2), ..., 1 | y_i
-  // We use BigInt fraction representation { num, den }
+
   function makeFrac(n, d = 1n) {
     if (d < 0n) { n = -n; d = -d; }
     return { num: n, den: d };
@@ -102,7 +119,7 @@ function getPolynomialCoefficients(sub) {
       powers.push(p);
       p *= x;
     }
-    powers.reverse(); // high to low powers
+    powers.reverse();
     for (let j = 0; j < k; j++) {
       row.push(makeFrac(powers[j]));
     }
@@ -110,7 +127,6 @@ function getPolynomialCoefficients(sub) {
     M.push(row);
   }
 
-  // Gaussian elimination
   for (let i = 0; i < k; i++) {
     let pivot = i;
     while (pivot < k && M[pivot][i].num === 0n) pivot++;
@@ -161,14 +177,15 @@ function getCombinations(arr, k, start = 0, current = [], results = []) {
 }
 
 /**
- * Main execution function for a test case file.
+ * Main execution function for a test case target.
  */
-function processTestCase(filePath) {
+function processTestCase(target, name) {
   console.log('====================================================');
-  console.log(' Processing Test Case: ' + filePath);
+  console.log(' Processing Test Case: ' + name);
   console.log('====================================================');
 
-  const { k, n, points } = parseInput(filePath);
+  const rawData = loadTestCase(target);
+  const { k, n, points } = parseData(rawData);
   console.log('n = ' + n + ', k = ' + k);
   console.log('\nDecoded (x, y) Points:');
   points.forEach(p => console.log('  x = ' + p.x.toString().padStart(2) + ', y = ' + p.y.toString()));
@@ -209,14 +226,15 @@ function processTestCase(filePath) {
   console.log('\n');
 }
 
-// Execute for inputs passed or defaults
+// Execute for provided arguments or default JS modules
 const fileArgs = process.argv.slice(2);
-const files = fileArgs.length > 0 ? fileArgs : ['input1.json', 'input2.json'];
 
-files.forEach(file => {
-  if (fs.existsSync(file)) {
-    processTestCase(file);
-  } else {
-    console.error('File not found: ' + file);
-  }
-});
+if (fileArgs.length > 0) {
+  fileArgs.forEach(arg => processTestCase(arg, arg));
+} else {
+  // Load native JS modules input1.js and input2.js
+  const input1 = require('./input1.js');
+  const input2 = require('./input2.js');
+  processTestCase(input1, 'input1.js');
+  processTestCase(input2, 'input2.js');
+}
