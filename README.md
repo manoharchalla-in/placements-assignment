@@ -1,7 +1,7 @@
 # 🛡️ Catalog Core Engineering | Cryptographic Secret Recovery System
 
 <p align="center">
-  <a href="https://manoharchalla-in.github.io/placements-assignment/"><img src="https://img.shields.io/badge/Live_Web_App-Interactive_Demo-brightgreen?style=for-the-badge&logo=googlechrome" alt="Live Web App" /></a>
+  <a href="https://chiginepallavi.github.io/exam/"><img src="https://img.shields.io/badge/Live_Web_App-Interactive_Demo-brightgreen?style=for-the-badge&logo=googlechrome" alt="Live Web App" /></a>
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=githubactions" alt="Build Status" />
   <img src="https://img.shields.io/badge/Precision-Arbitrary_BigInt-orange?style=for-the-badge&logo=node.js" alt="Arbitrary Precision" />
 </p>
@@ -14,7 +14,7 @@ An enterprise-grade, high-performance cryptographic reconstruction engine for re
 
 Experience and test the cryptographic solver directly in your browser without any installation:
 
-- 🚀 **Live Interactive Web Application:** [https://manoharchalla-in.github.io/placements-assignment/](https://manoharchalla-in.github.io/placements-assignment/)
+- 🚀 **Live Interactive Web Application:** [https://chiginepallavi.github.io/exam/](https://chiginepallavi.github.io/exam/)
 
 ### Web App Features:
 - ⚡ **Preset Loader:** Instant 1-click loading for Test Case 1 & Test Case 2.
