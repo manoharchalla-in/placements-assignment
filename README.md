@@ -16,28 +16,60 @@ Experience and test the cryptographic solver directly in your browser without an
 
 - 🚀 **Live Interactive Web Application:** [https://manoharchalla-in.github.io/placements-assignment/](https://manoharchalla-in.github.io/placements-assignment/)
 
-### Web App Features:
-- ⚡ **Preset Loader:** Instant 1-click loading for Test Case 1 & Test Case 2.
-- 🧮 **Live Telemetry Dashboard:** View base decoding, root health status (`HEALTHY` vs `CORRUPTED`), and real-time BigInt constant term recovery.
-- 🎨 **Glassmorphism UI:** Built with modern CSS variable styling and zero third-party framework overhead.
-
 ---
 
 ## 🏛️ System Architecture
 
+The Cryptographic Recovery Engine is architected around a 4-tier processing pipeline designed to handle arbitrary-precision numerical shares, isolate corrupted data points, and compute exact polynomial secret keys.
+
+### 1. High-Level Data Flow Diagram
+
 ```mermaid
 flowchart TD
-    A[Input JSON Payload] --> B[Arbitrary-Base Decoder Engine]
-    B --> C[BigInt x, y Root Parser]
-    C --> D{Root Count n > k?}
-    D -- No --> E[Direct Lagrange Polynomial Solver]
-    D -- Yes --> F[RANSAC-Style Polynomial Consensus Engine]
-    F --> G[Gaussian Matrix Solver & Integer Coefficient Verification]
-    G --> H[Imposter Root Isolation Node]
-    H --> I[Validated Degree-m Polynomial]
-    E --> J[Secret Constant Term c = f 0]
-    I --> J[Secret Constant Term c = f 0]
+    subgraph STAGE_1 ["Stage 1: Data Ingestion & Radix Parsing"]
+        A[JSON Test Case Payload] --> B[Schema Validator & Extractor]
+        B --> C[Radix Conversion Engine
+String Base-N ➔ BigInt Base-10]
+    end
+
+    subgraph STAGE_2 ["Stage 2: Anomaly Detection & Subset Generation"]
+        C --> D[Point Extractor: x_i, y_i Shares]
+        D --> E{Threshold Evaluation
+Is n > k?}
+        E -- No --> F[Direct First-k Share Array]
+        E -- Yes --> G[Combinatorial Subsets Generator
+Combinations n choose k]
+    end
+
+    subgraph STAGE_3 ["Stage 3: Polynomial Recovery & Verification"]
+        F --> H[Lagrange Polynomial Interpolator
+Evaluated at x = 0]
+        G --> I[Gauss-Jordan Matrix Solver]
+        I --> J{Integer Polynomial Verification
+All Coefficients a_i ∈ Z+}
+        J -- Fail --> K[Discard Candidate Subset]
+        J -- Pass --> L[Isolate Imposter/Corrupted Shares]
+        L --> M[Extract Valid Polynomial f x]
+    end
+
+    subgraph STAGE_4 ["Stage 4: Output & Telemetry Generation"]
+        H --> N[Secret Key Output: c = f 0]
+        M --> N
+        N --> O[Telemetry Dashboard: Healthy vs Corrupted Nodes]
+    end
 ```
+
+---
+
+### 2. Component Architecture Breakdown
+
+| Architecture Tier | Primary Component | Responsibility & Implementation |
+| :--- | :--- | :--- |
+| **Tier 1: Ingestion** | `RadixDecoderEngine` | Decodes base-N strings ($b \in [2, 36]$) into native 128-bit+ `BigInt` instances, bypassing IEEE 754 floating-point overflow limit ($2^{53}-1$). |
+| **Tier 2: Consensus** | `RANSACConsensusEngine` | Generates $inom{n}{k}$ subsets when $n > k$. Evaluates degree $m = k - 1$ polynomials to detect and filter out corrupted imposter roots. |
+| **Tier 3: Solver** | `LagrangeGaussSolver` | Implements exact Lagrange basis polynomial evaluation at $x = 0$: $c = \sum_{i=1}^k y_i \prod_{j 
+eq i} rac{-x_j}{x_i - x_j}$. |
+| **Tier 4: Telemetry** | `TelemetryReporter` | Computes node health status (`🟢 HEALTHY` vs `🔴 CORRUPTED`), outputs formatted console logs, and drives live browser UI rendering. |
 
 ---
 
