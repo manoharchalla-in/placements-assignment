@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shamir's Secret Sharing Solver | Enterprise Suite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-purple: #c084fc;
+      --accent-green: #4ade80;
+      --accent-red: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.15) 0px, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 868px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    button.btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), #0284c7);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    button.btn-primary:hover {
+      opacity: 0.9;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--accent-blue);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      padding: 1rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .secret-box {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(192, 132, 252, 0.1));
+      border: 1px solid var(--accent-blue);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .secret-title {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .secret-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      word-break: break-all;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    td.mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-healthy {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--accent-green);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-corrupted {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--accent-red);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .poly-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-purple);
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🛡️ Shamir's Secret Sharing Solver</h1>
+      <p>Enterprise Arbitrary-Precision Polynomial Secret Recovery & Anomaly Detection Engine</p>
+    </header>
+
+    <div class="grid">
+      <!-- Input Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>Input JSON Payload</span>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Load Preset</span>
+        </div>
+
+        <div class="btn-group">
+          <button onclick="loadPreset(1)">Load Test Case 1</button>
+          <button onclick="loadPreset(2)">Load Test Case 2</button>
+        </div>
+
+        <textarea id="jsonInput" placeholder="Paste test case JSON here..."></textarea>
+        <button class="btn-primary" onclick="solve()">🚀 Execute Secret Recovery</button>
+      </div>
+
+      <!-- Results Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>Telemetry & Recovered Secret</span>
+        </div>
+
+        <div class="secret-box">
+          <div class="secret-title">Secret Constant Term (c = f(0))</div>
+          <div class="secret-value" id="secretOutput">--</div>
+        </div>
+
+        <div id="statusInfo" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;"></div>
+
+        <div style="max-height: 250px; overflow-y: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Key (x)</th>
+                <th>Base</th>
+                <th>Decoded Value (Base 10)</th>
+                <th>Health Status</th>
+              </tr>
+            </thead>
+            <tbody id="telemetryBody">
+              <tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">Execute solver to display root telemetry...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="poly-box" id="polyOutput">Polynomial Formula: Run solver to evaluate.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const preset1 = {
+      "keys": { "n": 4, "k": 3 },
+      "1": { "base": "10", "value": "4" },
+      "2": { "base": "2", "value": "111" },
+      "3": { "base": "10", "value": "12" },
+      "6": { "base": "4", "value": "213" }
+    };
+
+    const preset2 = {
+      "keys": { "n": 10, "k": 7 },
+      "1": { "base": "6", "value": "13444211440455345511" },
+      "2": { "base": "15", "value": "aed7015a346d635" },
+      "3": { "base": "15", "value": "6aeeb69631c227c" },
+      "4": { "base": "16", "value": "e1b5e05623d881f" },
+      "5": { "base": "8", "value": "316034514573652620673" },
+      "6": { "base": "3", "value": "2122212201122002221120200210011020220200" },
+      "7": { "base": "3", "value": "2012022112221100010021002110200120112121" },
+      "8": { "base": "6", "value": "20220554335330240002224253" },
+      "9": { "base": "12", "value": "45153788322a1255483" },
+      "10": { "base": "7", "value": "1101613130313526312514143" }
+    };
+
+    function loadPreset(id) {
+      document.getElementById('jsonInput').value = JSON.stringify(id === 1 ? preset1 : preset2, null, 2);
+      solve();
+    }
+
+    function parseBigInt(str, base) {
+      const b = BigInt(base);
+      let res = 0n;
+      for (let char of str.toLowerCase()) {
+        let digit = BigInt(parseInt(char, 36));
+        res = res * b + digit;
+      }
+      return res;
+    }
+
+    function lagrangeInterpolationAtZero(pts) {
+      const k = pts.length;
+      let totalC = 0n;
+      for (let i = 0; i < k; i++) {
+        let num = pts[i].y;
+        let den = 1n;
+        for (let j = 0; j < k; j++) {
+          if (i !== j) {
+            num *= (-pts[j].x);
+            den *= (pts[i].x - pts[j].x);
+          }
+        }
+        totalC += num / den;
+      }
+      return totalC;
+    }
+
+    function getCombinations(arr, k, start = 0, current = [], results = []) {
+      if (current.length === k) {
+        results.push([...current]);
+        return results;
+      }
+      for (let i = start; i < arr.length; i++) {
+        current.push(arr[i]);
+        getCombinations(arr, k, i + 1, current, results);
+        current.pop();
+      }
+      return results;
+    }
+
+    function solve() {
+      try {
+        const raw = document.getElementById('jsonInput').value;
+        if (!raw.trim()) return;
+        const data = JSON.parse(raw);
+        const k = data.keys.k;
+        const n = data.keys.n;
+
+        const points = [];
+        for (let key in data) {
+          if (key === 'keys') continue;
+          const x = BigInt(key);
+          const y = parseBigInt(data[key].value, parseInt(data[key].base));
+          points.push({ x, y, base: data[key].base });
+        }
+        points.sort((a, b) => (a.x < b.x ? -1 : 1));
+
+        let validSubset = points.slice(0, k);
+        let secret = lagrangeInterpolationAtZero(validSubset);
+        let healthyKeys = validSubset.map(p => p.x);
+
+        if (n > k) {
+          const combinations = getCombinations(points, k);
+          for (let sub of combinations) {
+            const c = lagrangeInterpolationAtZero(sub);
+            // Verify consensus
+            let matches = 0;
+            points.forEach(p => {
+              let yVal = 0n;
+              for (let i = 0; i < sub.length; i++) {
+                let num = sub[i].y;
+                let den = 1n;
+                for (let j = 0; j < sub.length; j++) {
+                  if (i !== j) {
+                    num *= (p.x - sub[j].x);
+                    den *= (sub[i].x - sub[j].x);
+                  }
+                }
+                if (num % den === 0n) yVal += num / den;
+              }
+              if (yVal === p.y) matches++;
+            });
+
+            if (matches === k && c > 0n) {
+              secret = c;
+              validSubset = sub;
+              healthyKeys = sub.map(p => p.x);
+              break;
+            }
+          }
+        }
+
+        document.getElementById('secretOutput').innerText = secret.toString();
+        document.getElementById('statusInfo').innerHTML = `Verified threshold <b>k = ${k}</b> out of <b>n = ${points.length}</b> shares.`;
+
+        const tbody = document.getElementById('telemetryBody');
+        tbody.innerHTML = '';
+        points.forEach(p => {
+          const isHealthy = healthyKeys.includes(p.x);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="mono">${p.x.toString()}</td>
+            <td>Base ${p.base}</td>
+            <td class="mono" title="${p.y.toString()}">${p.y.toString().length > 18 ? p.y.toString().substring(0, 15) + '...' : p.y.toString()}</td>
+            <td><span class="${isHealthy ? 'badge-healthy' : 'badge-corrupted'}">${isHealthy ? 'HEALTHY' : 'CORRUPTED'}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('polyOutput').innerText = `Reconstructed Secret f(0) = ${secret.toString()} using roots [${healthyKeys.join(', ')}]`;
+
+      } catch (err) {
+        alert('Invalid JSON input: ' + err.message);
+      }
+    }
+
+    // Auto-load preset 2 on load
+    loadPreset(2);
+  </script>
+</body>
+</html>
